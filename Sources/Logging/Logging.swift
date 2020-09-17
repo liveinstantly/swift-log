@@ -14,6 +14,7 @@
 
 #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
 import Darwin
+import Foundation
 #elseif os(Windows)
 import MSVCRT
 #else
@@ -721,6 +722,26 @@ public struct StreamLogHandler: LogHandler {
     }
 
     private func timestamp() -> String {
+        let currentDate = Date()
+        let format = DateFormatter()
+        format.timeZone = .current
+        format.dateFormat = "Z"
+        let timezone = format.string(from: currentDate)
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second, .nanosecond], from: currentDate)
+        let year = String(format: "%4d", components.year!)
+        let month = String(format: "%02d", components.month!)
+        let day = String(format: "%02d", components.day!)
+        let hour = String(format: "%02d", components.hour!)
+        let minute = String(format: "%02d", components.minute!)
+        let second = String(format: "%02d", components.second!)
+        let microsecond = String(format: "%06d", lrint(Double(components.nanosecond!)/Double(1000)))
+        //let nanosecond = String(format: "%09d", components.nanosecond!)
+        let ts = year + "-" + month + "-" + day + "T" + hour + ":" + minute + ":" + second + "." + microsecond + timezone
+        return ts
+    }
+
+    private func timestampWithoutMicrosecond() -> String {
         var buffer = [Int8](repeating: 0, count: 255)
         var timestamp = time(nil)
         let localTime = localtime(&timestamp)
